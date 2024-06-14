@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherApp</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="search">
+                <input type="text" placeholder="Enter Your City Name">
+                <div class="search-icon">
+                    <i class='bx bx-search'></i>
+                </div>
+            </div>
+            <div class="error">
+                <p>Invalid city name</p>
+            </div>
+            <div class="main">
+                <img src="kaaba.png" alt="" class="kaaba-logo">
+                <div class="h2-container">
+                <h2 class="city">Karachi</h2>
+                <h2 class="date">00:00:00</h2></div>
+                <div class="details">
+                    <div class="col">
+                        <p>Fajr</p>
+                        <p class="f-time">00:00:00 AM</p>
+                    </div>
+                    <div class="col">
+                        <p>Dhuhr</p>
+                        <p class="d-time">00:00:00 AM</p>
+                    </div>
+                    <div class="col">
+                        <p>Maghrib</p>
+                        <p class="m-time">00:00:00 AM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const search = document.querySelector('.search input');
+        const searchBtn = document.querySelector('.search-icon');
+        const fajr = document.querySelector('.f-time');
+        const dhuhr = document.querySelector('.d-time');
+        const maghrib = document.querySelector('.m-time');
+        const City = document.querySelector('.city');
+        const main = document.querySelector('.main');
+        const error = document.querySelector('.error');
+        function tConvert(time) {
+            // Check correct time format and split into components
+            time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+
+            if (time.length > 1) { // If time format correct
+                time = time.slice(1);  // Remove full string match value
+                time[5] = +time[0] < 12 ? ' AM' : ' PM'; // Set AM/PM
+                time[0] = +time[0] % 12 || 12; // Adjust hours
+            }
+            return time.join(''); // return adjusted time or original string
+        }
+
+        async function generateTime(city) {
+            let response = await fetch(`http://api.aladhan.com/v1/timingsByCity?city=${city}&country=Pakistan&method=0`);
+            if (response.status === 404) {
+                error.style.display = "block";
+                main.style.display = "none";
+            } else {
+                let data = await response.json();
+                let Fajr = data.data.timings.Fajr;
+                let Dhuhr = data.data.timings.Dhuhr;
+                let Magrib = data.data.timings.Maghrib;
+                console.log(data)
+                fajr.innerHTML = tConvert(Fajr);
+                dhuhr.innerHTML = tConvert(Dhuhr);
+                maghrib.innerHTML = tConvert(Magrib);
+                City.innerHTML = city;
+                document.querySelector('.date').innerHTML = data.data.date.gregorian.date;
+                error.style.display = "none";
+                main.style.display = "flex";
+            }
+        }
+        // console.log(generateTime());
+
+        searchBtn.addEventListener("click", () => {
+            // console.log("clicked");
+            generateTime(search.value);
+        })
+
+
+
+    </script>
+</body>
+
+</html>
